@@ -1,0 +1,49 @@
+html, body {
+  background: #333333;
+}
+
+.main {
+  margin: auto;
+  text-align: center;
+}
+
+.bar {
+  width: 100%;
+}
+
+.cell {
+  background: black;
+  height: 150px;
+}
+
+.swatch {
+  display: inline-block;
+  border-radius: 100%;
+  width: 100px;
+  height: 100px;
+  margin: 10px;
+}
+
+input[type=radio],
+input[type=color] {
+  display: none;
+}
+
+#follower {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+#circle1 {
+  position: absolute;
+  -webkit-animation: pulse 4s infinite; /* Chrome, Safari, Opera */
+  animation: pulse 4s infinite;
+  background: rgba(200,0,0,0.8);
+  border-radius: 50%;
+  height: 32px;
+  width: 32px;
+  top: -16px;
+  left: -16px;
+  margin-top: 0em;
+  margin-left: 0em;
+}
