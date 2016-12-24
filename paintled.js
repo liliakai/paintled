@@ -17,20 +17,20 @@ function initCanvas() {
       canvas = G_vmlCanvasManager.initElement(canvas);
   }
   context = canvas.getContext("2d");
-  context.filter = "blur(5px)";
+  context.filter = "blur(10px)";
 
   $('#canvas').mousedown(function(e){
     var mouseX = e.pageX - this.offsetLeft;
     var mouseY = e.pageY - this.offsetTop;
     paint = true;
     addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
-    redraw();
+    //redraw();
   });
 
   $('#canvas').mousemove(function(e){
     if (paint) {
       addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
-      redraw();
+      //redraw();
     }
   });
 
@@ -52,6 +52,8 @@ var clickSize = new Array();
 var curSize = canvasWidth / NUM_LEDS;
 var curColor = '#ff0000';
 var paint;
+var needsUpdate;
+var updateTimeout;
 
 function addClick(x, y, dragging)
 {
@@ -60,42 +62,46 @@ function addClick(x, y, dragging)
   clickDrag.push(dragging);
   clickColor.push(curColor);
   clickSize.push(curSize);
+
+  var i = clickX.length - 1;
+  draw(i, clickX[i], clickDrag[i], clickX[i-1], clickColor[i]);
+
+  scheduleUpdate();
 }
 
-function stringColorAlpha(color, alpha) {
-      return 'rgba(' + [color.r, color.g, color.b, alpha].join(',') + ')';
+function scheduleUpdate() {
+  needsUpdate = true;
+  clearTimeout(updateTimeout);
+  updateTimeout = setTimeout(update, 0);
+}
+
+function update() {
+  if (paint) {
+    scheduleUpdate();
+  } else {
+    renderLED();
+  }
 }
 
 function redraw(){
   context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
   context.lineJoin = "round";
   for (var i=0; i < clickX.length; i++) {
-    /*
-    for (var y=canvasHeight-1; y > -1; --y) {
-      context.beginPath();
-      if (clickDrag[i] && i) {
-        context.moveTo(clickX[i-1], y);
-      } else {
-        context.moveTo(clickX[i]-1, y);
-      }
-      context.lineTo(clickX[i], y);
-      context.closePath();
-      context.strokeStyle = stringColorAlpha(clickColor[i], 0.1*y/canvasHeight);
-      context.lineWidth = clickSize[i];
-      context.stroke();
-    }
-    */
-
-    var startX = (clickDrag[i] && i) ? clickX[i-1] : clickX[i]-1;
-    var gradient = context.createLinearGradient(0,0,0,canvasHeight);
-    gradient.addColorStop(0,"rgba(0,0,0,0)");
-    gradient.addColorStop(1,clickColor[i]);
-    context.fillStyle = gradient;
-    context.fillRect(startX,0,clickX[i]-startX,canvasHeight);
+    draw(i, clickX[i], clickDrag[i], clickX[i-1], clickColor[i]);
   }
 }
 
+function draw(i, x, drag, prevX, color) {
+    var startX = (drag && i) ? prevX : x-1;
+    var gradient = context.createLinearGradient(0,0,0,canvasHeight);
+    gradient.addColorStop(0,"rgba(0,0,0,0)");
+    gradient.addColorStop(1,color);
+    context.fillStyle = gradient;
+    context.fillRect(startX,0,x-startX,canvasHeight);
+}
+
 function renderLED() {
+  console.log("rendering leds");
   var step = canvasWidth/NUM_LEDS;
   for (var x=0; x < NUM_LEDS; ++x) {
     var data = context.getImageData(x*step, canvasHeight-1, step, 1).data;
@@ -110,13 +116,12 @@ function renderLED() {
     g = g/step;
     b = b/step;
     a = a/step;
-    r = Math.trunc(r*a/255);
-    g = Math.trunc(g*a/255);
-    b = Math.trunc(b*a/255);
-    $.get(['http://arduino.local/arduino/custom', r, g, b, x, 1].join('/'));
+    r = Math.trunc(r);
+    g = Math.trunc(g);
+    b = Math.trunc(b);
+    $.get(['http://restLED.local/arduino/custom', r, g, b, x, 1].join('/'));
   }
 }
-
 
 $('.swatch').click(function(e) {
   var $el = $(e.target);
@@ -124,28 +129,6 @@ $('.swatch').click(function(e) {
   $('.swatch').removeClass('selected');
   $el.addClass('selected');
 });
-
-var follower = $('#follower');
-
-function mouseX(event) {
-  return event.clientX
-}
-function mouseY(event) {
-  return event.clientY
-}
-function positionElement(event) {
-  var mouse = { x: mouseX(event), y: mouseY(event) }
-  follower.css('top', mouse.y + 'px');
-  follower.css('left', mouse.x + 'px');
-}
-
-var timer = false;
-window.onmousemove = function init(event) {
-    _event = event
-    timer = setTimeout(function() {
-          positionElement(_event)
-    } , 1);
-};
 
 $(function() {
   initCanvas();

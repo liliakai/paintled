@@ -12,7 +12,7 @@ html, body {
 }
 
 canvas {
-  border: 1px solid black;
+  background: black;
   height: 150px;
 }
 
