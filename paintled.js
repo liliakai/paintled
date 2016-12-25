@@ -1,49 +1,9 @@
-console.log('loaded');
+console.log('paintled loaded');
 
 var NUM_LEDS = 60;
-
 var canvas, context, paint;
 var canvasHeight = 150;
 var canvasWidth = 10*NUM_LEDS;
-
-function initCanvas() {
-  var canvasDiv = document.getElementById('canvasDiv');
-  canvas = document.createElement('canvas');
-  canvas.setAttribute('width', canvasWidth);
-  canvas.setAttribute('height', canvasHeight);
-  canvas.setAttribute('id', 'canvas');
-  canvasDiv.appendChild(canvas);
-  if(typeof G_vmlCanvasManager != 'undefined') {
-      canvas = G_vmlCanvasManager.initElement(canvas);
-  }
-  context = canvas.getContext("2d");
-  context.filter = "blur(10px)";
-
-  $('#canvas').mousedown(function(e){
-    var mouseX = e.pageX - this.offsetLeft;
-    var mouseY = e.pageY - this.offsetTop;
-    paint = true;
-    addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
-    //redraw();
-  });
-
-  $('#canvas').mousemove(function(e){
-    if (paint) {
-      addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
-      //redraw();
-    }
-  });
-
-  $('#canvas').mouseup(function(e){
-    paint = false;
-  });
-
-  $('#canvas').mouseleave(function(e){
-    paint = false;
-  });
-
-}
-
 var clickX = new Array();
 var clickY = new Array();
 var clickColor = new Array();
@@ -55,8 +15,7 @@ var paint;
 var needsUpdate;
 var updateTimeout;
 
-function addClick(x, y, dragging)
-{
+function addClick(x, y, dragging) {
   clickX.push(x);
   clickY.push(y);
   clickDrag.push(dragging);
@@ -83,21 +42,13 @@ function update() {
   }
 }
 
-function redraw(){
-  context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
-  context.lineJoin = "round";
-  for (var i=0; i < clickX.length; i++) {
-    draw(i, clickX[i], clickDrag[i], clickX[i-1], clickColor[i]);
-  }
-}
-
 function draw(i, x, drag, prevX, color) {
-    var startX = (drag && i) ? prevX : x-1;
-    var gradient = context.createLinearGradient(0,0,0,canvasHeight);
-    gradient.addColorStop(0,"rgba(0,0,0,0)");
-    gradient.addColorStop(1,color);
-    context.fillStyle = gradient;
-    context.fillRect(startX,0,x-startX,canvasHeight);
+  var startX = (drag && i) ? prevX : x-1;
+  var gradient = context.createLinearGradient(0,0,0,canvasHeight);
+  gradient.addColorStop(0,"rgba(0,0,0,0)");
+  gradient.addColorStop(1,color);
+  context.fillStyle = gradient;
+  context.fillRect(startX,0,x-startX,canvasHeight);
 }
 
 function renderLED() {
@@ -131,10 +82,39 @@ $('.swatch').click(function(e) {
 });
 
 $(function() {
-  initCanvas();
-  for (i=0; i < NUM_LEDS; ++i) {
-    $('.bar tr').append($('<td class="cell">'));
+  var canvasDiv = document.getElementById('canvasDiv');
+  canvas = document.createElement('canvas');
+  canvas.setAttribute('width', canvasWidth);
+  canvas.setAttribute('height', canvasHeight);
+  canvas.setAttribute('id', 'canvas');
+  canvasDiv.appendChild(canvas);
+  if(typeof G_vmlCanvasManager != 'undefined') {
+      canvas = G_vmlCanvasManager.initElement(canvas);
   }
+  context = canvas.getContext("2d");
+  context.filter = "blur(10px)";
+
+  $('#canvas').mousedown(function(e){
+    var mouseX = e.pageX - this.offsetLeft;
+    var mouseY = e.pageY - this.offsetTop;
+    paint = true;
+    addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
+  });
+
+  $('#canvas').mousemove(function(e){
+    if (paint) {
+      addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
+    }
+  });
+
+  $('#canvas').mouseup(function(e){
+    paint = false;
+  });
+
+  $('#canvas').mouseleave(function(e){
+    paint = false;
+  });
+
   $('.swatch').each(function(i, el) {
     var $el = $(el);
     var color = $el.find('input[type=color]').val();
